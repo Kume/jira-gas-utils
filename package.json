@@ -1,0 +1,36 @@
+{
+  "name": "jira-gas-utils",
+  "version": "0.1.0",
+  "author": "makoto.kume",
+  "license": "MIT",
+  "private": true,
+  "scripts": {
+    "lint": "lerna run lint"
+  },
+  "workspaces": {
+    "packages": [
+      "tools/*",
+      "packages/*"
+    ]
+  },
+  "devDependencies": {
+    "@types/jest": "^27.4.1",
+    "@typescript-eslint/eslint-plugin": "^5.17.0",
+    "@typescript-eslint/parser": "^5.17.0",
+    "eslint": "^8.12.0",
+    "eslint-config-prettier": "^8.5.0",
+    "eslint-plugin-react": "^7.29.4",
+    "eslint-plugin-react-hooks": "^4.4.0",
+    "jest": "^27.5.1",
+    "lerna": "^4.0.0",
+    "prettier": "^2.6.1",
+    "ts-jest": "^27.1.4",
+    "ts-node": "^10.7.0",
+    "ts-node-dev": "^1.1.8",
+    "typescript": "^4.6.3"
+  },
+  "packageManager": "yarn@3.2.0",
+  "volta": {
+    "node": "16.14.2"
+  }
+}
