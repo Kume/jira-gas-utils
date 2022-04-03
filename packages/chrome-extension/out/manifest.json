@@ -1,0 +1,17 @@
+{
+  "name": "jira-gas-utils-chrome-extension",
+  "version": "0.1.0",
+  "manifest_version": 3,
+  "description": "サンプル",
+  "content_scripts": [
+    {
+      "matches": ["https://www.google.com/"],
+      "js": ["index.js"]
+    },
+    {
+      "matches": ["https://twitter.com/"],
+      "js": ["load.js"]
+    }
+  ],
+  "permissions": ["storage"]
+}
