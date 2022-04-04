@@ -1,0 +1,5 @@
+**/**
+!**/*.ts
+!appsscript.json
+!app.html
+node_modules/**

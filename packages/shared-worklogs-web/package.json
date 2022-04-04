@@ -1,0 +1,41 @@
+{
+  "name": "@jira-gas-utils/shared-worklogs-web",
+  "author": "makoto.kume",
+  "version": "0.1.0",
+  "description": "JIRAのサマリ情報をwebで見るためのアプリです。",
+  "privete": true,
+  "scripts": {
+    "test": "jest",
+    "build": "webpack --mode production --env production",
+    "export": "cp out/index.html ../shared-worklogs/src/app.html",
+    "dev": "webpack serve --hot --mode development --content-base public",
+    "lint": "eslint --ext .jsx,.js,.tsx,.ts ./src && prettier -c src",
+    "prettier": "prettier -w src",
+    "typecheck": "tsc"
+  },
+  "dependencies": {
+    "react": "^17.0.1",
+    "react-dom": "^17.0.1"
+  },
+  "devDependencies": {
+    "@babel/core": "^7.12.10",
+    "@babel/plugin-proposal-class-properties": "^7.12.1",
+    "@babel/plugin-proposal-object-rest-spread": "^7.12.1",
+    "@babel/preset-env": "^7.12.11",
+    "@babel/preset-react": "^7.12.10",
+    "@babel/preset-typescript": "^7.12.7",
+    "@babel/runtime": "^7.12.5",
+    "@pmmmwh/react-refresh-webpack-plugin": "^0.4.3",
+    "@types/react": "^17.0.0",
+    "@types/react-dom": "^17.0.0",
+    "babel-jest": "^26.6.3",
+    "babel-loader": "^8.2.2",
+    "html-webpack-plugin": "^5.3.2",
+    "react": "^17.0.1",
+    "react-dev-utils": "^11.0.4",
+    "react-refresh": "^0.10.0",
+    "webpack": "^5.17.0",
+    "webpack-cli": "^4.4.0",
+    "webpack-dev-server": "^3.11.2"
+  }
+}
