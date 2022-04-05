@@ -1,7 +1,18 @@
-import {getTemplateSpreadSheetId} from './getTemplateSpreadSheetId';
+import {getOrInputUserProperty} from './spreadUtils';
 
 export function getTemplateSpreadSheet(): GoogleAppsScript.Spreadsheet.Spreadsheet {
-  return SpreadsheetApp.openById(getTemplateSpreadSheetId());
+  const sheetId = getOrInputUserProperty('テンプレートスプレッドシートID', 'templateSpreadSheetId', (id) => {
+    try {
+      const spreadSheet = SpreadsheetApp.openById(sheetId);
+      if (!spreadSheet) {
+        return 'テンプレートスプレッドシートにアクセス出来ませんでした。(2)';
+      }
+    } catch (error) {
+      return 'テンプレートスプレッドシートにアクセス出来ませんでした。';
+    }
+    return undefined;
+  });
+  return SpreadsheetApp.openById(sheetId);
 }
 
 export function getTemplateSheetByName(name: string): GoogleAppsScript.Spreadsheet.Sheet {

@@ -1,15 +1,29 @@
-export function refreshUserProperty(label: string, propertyName: string): string {
-  const token = Browser.inputBox(`${label}を入力してください。`);
-  if (!token || token === 'cancel') {
+export function refreshUserProperty(
+  label: string,
+  propertyName: string,
+  validate?: (value: string) => string | undefined,
+): string {
+  const value = Browser.inputBox(`${label}を入力してください。`);
+  if (!value || value === 'cancel') {
     throw new Error(`${label}が入力されなかったので処理を中断します。`);
   }
-  PropertiesService.getUserProperties().setProperty(propertyName, token);
-  return token;
+  if (validate) {
+    const errorMessage = validate(value);
+    if (errorMessage) {
+      throw new Error(errorMessage);
+    }
+  }
+  PropertiesService.getUserProperties().setProperty(propertyName, value);
+  return value;
 }
 
-export function getOrInputUserProperty(label: string, propertyName: string): string {
+export function getOrInputUserProperty(
+  label: string,
+  propertyName: string,
+  validate?: (value: string) => string | undefined,
+): string {
   const token = PropertiesService.getUserProperties().getProperty(propertyName);
-  return token ?? refreshUserProperty(label, propertyName);
+  return token ?? refreshUserProperty(label, propertyName, validate);
 }
 
 export function getStartOfDate(date: string | number | Date): Date {
