@@ -1,0 +1,13 @@
+{
+  "name": "@jira-gas-utils/jira-common",
+  "author": "makoto.kume",
+  "version": "0.1.0",
+  "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "scripts": {
+    "test": "jest",
+    "build": "tsc",
+    "dev": "tsc -w",
+    "lint": "eslint --ext .jsx,.js,.tsx,.ts ./src"
+  }
+}

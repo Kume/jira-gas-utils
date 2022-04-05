@@ -1,0 +1,12 @@
+{
+  "extends": "../../configs/tsconfig.lib.json",
+  "compilerOptions": {
+    "lib": ["dom", "ES2015"],
+    "outDir": "./out",
+    "rootDir": "./src",
+    "resolveJsonModule": true,
+    "declarationMap": false,
+    "declaration": false
+  },
+  "include": ["./src"]
+}
