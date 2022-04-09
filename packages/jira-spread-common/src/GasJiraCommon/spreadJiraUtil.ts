@@ -1,16 +1,12 @@
 import {ForamttedJiraIsssue} from '../Jira/types';
-import {GetSpreadWorklogGlobal} from '../Spread/common';
+import {getGasJiraGlobal} from './GasJiraGlobal';
 
 export function jiraIssueLinkSpreadCell(issue: ForamttedJiraIsssue): string {
   return jiraIssueLinkSpreadCellForKey(issue.key);
 }
 
 export function jiraIssueLinkSpreadCellForKey(key: string): string {
-  const jiraHost = GetSpreadWorklogGlobal().JiraHost;
-  if (!jiraHost) {
-    throw new Error('JiraHost not initialized.');
-  }
-  return `=HYPERLINK("${jiraHost}browse/${key}","${key}")`;
+  return `=HYPERLINK("${getGasJiraGlobal().jiraHost}browse/${key}","${key}")`;
 }
 
 export function timeSecondsToHour(timeSecound: number): number {

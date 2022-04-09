@@ -3,14 +3,11 @@ import {getOrInputUserProperty} from './spreadUtils';
 export function getTemplateSpreadSheet(): GoogleAppsScript.Spreadsheet.Spreadsheet {
   const sheetId = getOrInputUserProperty('テンプレートスプレッドシートID', 'templateSpreadSheetId', (id) => {
     try {
-      const spreadSheet = SpreadsheetApp.openById(sheetId);
-      if (!spreadSheet) {
-        return 'テンプレートスプレッドシートにアクセス出来ませんでした。(2)';
-      }
+      SpreadsheetApp.openById(id);
+      return undefined;
     } catch (error) {
       return 'テンプレートスプレッドシートにアクセス出来ませんでした。';
     }
-    return undefined;
   });
   return SpreadsheetApp.openById(sheetId);
 }
