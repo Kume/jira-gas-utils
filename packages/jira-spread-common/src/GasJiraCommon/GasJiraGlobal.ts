@@ -1,5 +1,6 @@
 export interface GasJiraGlobal {
   readonly jiraHost: string;
+  readonly email: string;
 }
 
 let _gasJiraGlobal: GasJiraGlobal | undefined;
