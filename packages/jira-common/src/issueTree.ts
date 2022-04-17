@@ -18,10 +18,26 @@ interface SimpleSubTaskIssue extends SimpleIssueCommon {
 
 type SimpleIssue = SimpleEpicIssue | SimpleStandardIssue | SimpleSubTaskIssue;
 
-export interface IssueTreeNode<Issue extends SimpleIssue> {
-  readonly issue: Issue;
-  readonly children: readonly IssueTreeNode<Issue>[];
+type SelectByType<T, Type> = T extends {type: Type} ? T : never;
+
+export interface StandardIssueTreeNode<Issue extends SimpleIssue> {
+  readonly issue: SelectByType<Issue, 'standard'>;
+  readonly children?: readonly SubTaskIssueTreeNode<Issue>[];
 }
+
+export interface SubTaskIssueTreeNode<Issue extends SimpleIssue> {
+  readonly issue: SelectByType<Issue, 'subTask'>;
+}
+
+export interface EpickIssueTreeNode<Issue extends SimpleIssue> {
+  readonly issue: SelectByType<Issue, 'epic'>;
+  readonly children?: readonly StandardIssueTreeNode<Issue>[];
+}
+
+export type IssueTreeNode<Issue extends SimpleIssue> =
+  | EpickIssueTreeNode<Issue>
+  | StandardIssueTreeNode<Issue>
+  | SubTaskIssueTreeNode<Issue>;
 
 interface WritableTreeNode<Issue extends SimpleIssue> {
   readonly issue: Issue;
@@ -36,7 +52,7 @@ export function buildIssueTree<Issue extends SimpleIssue>(issues: readonly Issue
     nodeByKey.set(issue.key, {issue, children: []});
   }
 
-  for (const node of [...nodeByKey.values()]) {
+  for (const node of [...nodeByKey.values()] as any as IssueTreeNode<Issue>[]) {
     // eslint-disable-next-line @typescript-eslint/no-unnecessary-type-assertion
     const issue = node.issue as SimpleIssue;
     switch (issue.type) {
@@ -62,4 +78,50 @@ export function buildIssueTree<Issue extends SimpleIssue>(issues: readonly Issue
   }
 
   return treeRoutes;
+}
+
+type SelectByIssueType<Node extends {issue: SimpleIssue}, Type extends SimpleIssue['type']> = Node extends {
+  issue: {type: Type};
+}
+  ? Node
+  : never;
+
+function issueTreeNodeTypeIs<Issue extends SimpleIssue, Type extends SimpleIssue['type']>(
+  issue: IssueTreeNode<Issue>,
+  type: Type,
+): issue is SelectByIssueType<IssueTreeNode<Issue>, Type> {
+  return issue.issue.type === type;
+}
+
+export function flatSampleIssueTree<Issue extends SimpleIssue>(rootNodes: readonly IssueTreeNode<Issue>[]): Issue[] {
+  const issues: Issue[] = [];
+  for (let rootNode of rootNodes) {
+    issues.push(rootNode.issue);
+    if (issueTreeNodeTypeIs(rootNode, 'epic')) {
+      addEpicIssueChildren(rootNode, issues);
+    } else if (issueTreeNodeTypeIs(rootNode, 'standard')) {
+      addStandardIssueChildren(rootNode, issues);
+    }
+  }
+  return issues;
+}
+
+function addEpicIssueChildren<Issue extends SimpleIssue>(node: EpickIssueTreeNode<Issue>, issues: Issue[]): void {
+  if (node.children) {
+    for (const child of node.children) {
+      issues.push({...child.issue, epicLink: node.issue.key});
+      addStandardIssueChildren(child, issues);
+    }
+  }
+}
+
+function addStandardIssueChildren<Issue extends SimpleIssue>(
+  node: StandardIssueTreeNode<Issue>,
+  issues: Issue[],
+): void {
+  if (node.children) {
+    for (const child of node.children) {
+      issues.push({...child.issue, parentKey: node.issue.key});
+    }
+  }
 }

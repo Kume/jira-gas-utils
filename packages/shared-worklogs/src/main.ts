@@ -1,4 +1,6 @@
 import {getGasJiraGlobal, setGasJiraGlobal} from './GasJiraCommon/GasJiraGlobal';
+import {AccountTypeSheet} from './Sheets/AccountTypeSheet';
+import {JobsSheet} from './Sheets/JobsSheet';
 import {SettingSheet} from './Sheets/SettingSheet';
 import {WorklogSheet} from './Sheets/WorklogSheet';
 import {SpreadJiraClient} from './SpreadCommon/SpreadJiraClient';
@@ -18,7 +20,9 @@ function initialize() {
   new SettingSheet().refresh();
   // new DailySheet().refreshSheet();
   new WorklogSheet().refreshSheet();
-  // new TimeLogSheet().refreshSheet();
+  new JobsSheet().refreshSheet();
+  new AccountTypeSheet().refreshSheet();
+  initializeVariables();
 }
 
 function initializeVariables() {
@@ -37,4 +41,18 @@ function dev() {
   const worklogSheet = new WorklogSheet();
   const client = new SpreadJiraClient(getGasJiraGlobal());
   worklogSheet.syncJiraToSheet(client);
+}
+
+function loadJobs() {
+  initializeVariables();
+  return new JobsSheet().readJobs();
+}
+
+function loadAccountTypes() {
+  initializeVariables();
+  return new AccountTypeSheet().readAccountTypes();
+}
+
+function loadRelatedIssues() {
+  // TODO
 }

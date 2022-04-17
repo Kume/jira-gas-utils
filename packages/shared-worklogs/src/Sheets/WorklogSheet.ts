@@ -3,12 +3,12 @@ import {SheetBase} from '../SpreadCommon/SheetBase';
 import {SpreadJiraClient} from '../SpreadCommon/SpreadJiraClient';
 import {getStartOfDate} from '../SpreadCommon/spreadUtils';
 import {WorklogOnSheet} from './types';
-import {WorklogOnSpreadsheetConverter} from './WorklogOnSpreadsheet';
+import {WorklogOnSpreadsheetConverter} from './WorklogOnSpreadsheetConverter';
 
 export type StoredWorklog = WorklogOnSheet & {readonly row: number};
 
 export class WorklogSheet {
-  public readonly sheetBase = new SheetBase('共有作業ログ記録', '共有作業ログ記録');
+  public readonly sheetBase = new SheetBase('共有作業ログ記録', '作業ログ記録');
   private readonly converter = new WorklogOnSpreadsheetConverter();
 
   public refreshSheet(): void {
@@ -30,7 +30,20 @@ export class WorklogSheet {
       const storedRow = storedWorklogIdRowMap.get(newWorklog[0].id);
       if (storedRow !== undefined) {
         // すでに存在しているログなら更新
-        sheet.getRange(storedRow, 1, 1, this.converter.columnCount).setValues([this.converter.rawToSpread(newWorklog)]);
+        const rowData = this.converter.rawToSpread(newWorklog);
+        if (rowData.some((cell) => cell === undefined)) {
+          // undefinedが含まれている場合、そのセルは上書きしないので、セル一つ一つ更新していく
+          let column = 1;
+          for (const cell of rowData) {
+            if (cell !== undefined) {
+              sheet.getRange(storedRow, column++, 1, 1).setValue(cell);
+            }
+          }
+        } else {
+          sheet
+            .getRange(storedRow, 1, 1, this.converter.columnCount)
+            .setValues([this.converter.rawToSpread(newWorklog)]);
+        }
       } else {
         sheet.getRange(nextRow, 1, 1, this.converter.columnCount).setValues([this.converter.rawToSpread(newWorklog)]);
         nextRow++;

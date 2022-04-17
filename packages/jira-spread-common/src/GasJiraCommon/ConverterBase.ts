@@ -1,11 +1,11 @@
-export type SpreadSheetValue = string | number | Date | null;
+export type SpreadSheetValue = string | number | Date | null | undefined;
 
 export type ArrayToWritable<T> = T extends ReadonlyArray<infer E> ? E[] : T;
 export type Writable<T> = {-readonly [P in keyof T]: ArrayToWritable<T[P]>};
 
 export interface ConverterDefinition<RawItem, StoredItem> {
   readonly label: string;
-  readonly rawToSpread: (worklog: RawItem) => string | number | Date;
+  readonly rawToSpread: (worklog: RawItem) => SpreadSheetValue;
   readonly spreadToStored: (worklog: Partial<Writable<StoredItem>>, value: SpreadSheetValue | undefined) => void;
 }
 

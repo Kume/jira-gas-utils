@@ -11,6 +11,21 @@ export interface WorklogOnSheet {
   readonly content: string;
   readonly issueKey: string;
   readonly userEmail: string;
+  readonly jobNumber?: string;
+  readonly jobType?: string;
+}
+
+export interface SQJobOnSheet {
+  readonly id: string;
+  readonly label: string;
+  readonly accountTypes: readonly string[];
+}
+
+export interface SQAccountTypeOnSheet {
+  readonly id: string;
+  readonly label_l1: string;
+  readonly label_l2: string;
+  readonly label_l3: string;
 }
 
 interface IssueOnSheetBase {
@@ -18,6 +33,7 @@ interface IssueOnSheetBase {
   readonly summary: string;
   readonly asigneeEmail: string | null;
   readonly mainAssignee: string | null;
+  readonly updatedAt: Date;
 }
 
 export interface EpicIssueOnSheet extends IssueOnSheetBase {
