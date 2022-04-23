@@ -57,3 +57,19 @@ export interface Member {
   readonly name: string;
   readonly email: string;
 }
+
+export type IssueWithRelation = IssueOnSheet & {readonly relation: IssueRelation};
+
+/**
+ * 自身に関連のあるIssueの関係性を表します。
+ */
+export interface IssueRelation {
+  /** 最近作業したことを表します。 */
+  readonly recentlyWorked?: {readonly at: string};
+
+  /** 自身が担当になっていることを表します。 */
+  readonly assigned?: boolean;
+
+  /** お気に入りに入れたことを表します。 */
+  readonly bookmark?: boolean;
+}

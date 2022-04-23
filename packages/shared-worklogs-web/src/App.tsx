@@ -30,7 +30,7 @@ export const App: React.FC = () => {
 
   switch (page) {
     case 'startWork':
-      return <StartWorkPage />;
+      return <StartWorkPage onBack={() => setPage(undefined)} />;
 
     default:
       return (

@@ -4,15 +4,17 @@ import {JiraIssueFormatter} from '../Jira/issue';
 import {ForamttedJiraIsssue, JiraField, JiraWorklog, JiraWorklogCreateRequest} from '../Jira/types';
 
 export interface SpreadJiraClientSettings {
-  readonly email: string;
   readonly jiraHost: string;
 }
 
 export class SpreadJiraClient {
   private fetcher: JiraFetcher;
+  private email: string;
 
   public constructor(private settings: SpreadJiraClientSettings) {
-    this.fetcher = createFetcher({email: settings.email, host: settings.jiraHost});
+    // googleアカウントのメールアドレス = Jiraに登録してあるメールアドレスである前提
+    this.email = Session.getActiveUser().getEmail();
+    this.fetcher = createFetcher({host: settings.jiraHost, email: this.email});
   }
 
   private _fields?: JiraField[];
@@ -29,7 +31,7 @@ export class SpreadJiraClient {
     const worklogList = this.fetcher.getWorklogList({since});
     const worklogs = this.fetcher
       .getWorklogs(worklogList.values.map(({worklogId}) => worklogId))
-      .filter(({author}) => author.emailAddress === this.settings.email);
+      .filter(({author}) => author.emailAddress === this.email);
     const issueIds = new Set<string>(worklogs.map(({issueId}) => issueId));
     const issues = this.fetchIssuesByIds(Array.from(issueIds));
     const issuesById: Map<string, ForamttedJiraIsssue> = new Map(issues.map((issue) => [issue.id, issue] as const));

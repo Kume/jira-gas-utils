@@ -1,6 +1,7 @@
-import {IssueOnSheet, SQAccountTypeOnSheet, SQJobOnSheet} from './types';
+import {IssueOnSheet, IssueRelation, SQAccountTypeOnSheet, SQJobOnSheet} from './types';
 import {flatSampleIssueTree} from '@jira-gas-utils/jira-spread-common/dist/Jira/issueTree';
 import dayjs from 'dayjs';
+import {IssueWithRelation} from './appTypes';
 
 declare const google: any;
 
@@ -38,11 +39,11 @@ export async function fetchAccountTypes(): Promise<SQAccountTypeOnSheet[]> {
   );
 }
 
-export async function fetchRelatedIssues(): Promise<IssueOnSheet[]> {
-  const result = await runScriptAsync<IssueOnSheet[]>('loadRelatedIssues');
+export async function fetchRelatedIssues(): Promise<IssueWithRelation[]> {
+  const result = await runScriptAsync<IssueWithRelation[]>('loadRelatedIssues');
   return (
     result ??
-    flatSampleIssueTree<IssueOnSheet>([
+    flatSampleIssueTree<IssueWithRelation>([
       {
         issue: {
           key: 'I-0100',
@@ -52,6 +53,7 @@ export async function fetchRelatedIssues(): Promise<IssueOnSheet[]> {
           mainAssignee: null,
           epicName: 'エピ1',
           updatedAt: dayjs('2022-04-01').toDate(),
+          relation: {assigned: true, recentlyWorked: {at: '2022-04-01'}},
         },
         children: [
           {
@@ -63,7 +65,46 @@ export async function fetchRelatedIssues(): Promise<IssueOnSheet[]> {
               mainAssignee: null,
               epicLink: undefined,
               updatedAt: dayjs('2022-04-03').toDate(),
+              relation: {assigned: true},
             },
+            children: [
+              {
+                issue: {
+                  key: 'I-0111',
+                  type: 'subTask',
+                  summary: 'サブタスク1-1-1',
+                  asigneeEmail: null,
+                  mainAssignee: null,
+                  parentKey: 'dummy',
+                  updatedAt: dayjs('2022-04-03').toDate(),
+                  relation: {recentlyWorked: {at: '2022-04-05'}},
+                },
+              },
+              {
+                issue: {
+                  key: 'I-0112',
+                  type: 'subTask',
+                  summary: 'サブタスク1-1-2-とても長いタスク名のテストのために とても長いタスク名をつけてみます。',
+                  asigneeEmail: null,
+                  mainAssignee: null,
+                  parentKey: 'dummy',
+                  updatedAt: dayjs('2022-04-03').toDate(),
+                  relation: {recentlyWorked: {at: '2022-04-10'}},
+                },
+              },
+              {
+                issue: {
+                  key: 'I-0113',
+                  type: 'subTask',
+                  summary: 'サブタスク1-1-3',
+                  asigneeEmail: null,
+                  mainAssignee: null,
+                  parentKey: 'dummy',
+                  updatedAt: dayjs('2022-04-03').toDate(),
+                  relation: {recentlyWorked: {at: '2022-05-01'}},
+                },
+              },
+            ],
           },
           {
             issue: {
@@ -74,6 +115,19 @@ export async function fetchRelatedIssues(): Promise<IssueOnSheet[]> {
               mainAssignee: null,
               epicLink: undefined,
               updatedAt: dayjs('2022-04-04').toDate(),
+              relation: {bookmark: true, recentlyWorked: {at: '2022-04-01'}},
+            },
+          },
+          {
+            issue: {
+              key: 'I-0130',
+              type: 'standard',
+              summary: 'タスク1-3',
+              asigneeEmail: null,
+              mainAssignee: null,
+              epicLink: undefined,
+              updatedAt: dayjs('2022-04-04').toDate(),
+              relation: {bookmark: true},
             },
           },
         ],
