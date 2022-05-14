@@ -19,11 +19,12 @@ import {
   Thead,
   Tr,
 } from '@chakra-ui/react';
-import React from 'react';
+import dayjs from 'dayjs';
+import React, {useMemo} from 'react';
 import {useFieldArray, useForm} from 'react-hook-form';
 import {useQuery} from 'react-query';
 import {fetchJobs, fetchRelatedIssues} from '../api';
-import {issueRelationToLabel, sortIssueByRelation} from '../models';
+import {issueRelationToLabel, LocalStorageKey_WorklogsOnStart, sortIssueByRelation} from '../models';
 import {IssueOnSheet} from '../types';
 
 interface FormValue {
@@ -36,7 +37,7 @@ interface FormValue {
 interface WorkItem {
   readonly issue: IssueOnSheet;
   readonly content: string;
-  readonly minute: number;
+  readonly time: string;
 }
 
 interface Props {
@@ -52,18 +53,24 @@ export const StartWorkPage: React.FC<Props> = ({onBack}) => {
     register,
     control,
     handleSubmit,
+    setValue,
     formState: {errors},
-  } = useForm<FormValue>();
+  } = useForm<FormValue>({defaultValues: {startTime: dayjs().format('HH:mm')}});
   const {fields, append, remove} = useFieldArray({control, name: 'workItems'});
   const {isLoading: relatedIssuesIsLoading, data: relatedIssues} = useQuery('relatedIssues', fetchAndSortRelatedIssues);
   const {isLoading: jobsIsLoading, data: jobs} = useQuery('jobs', fetchJobs);
 
   console.log('xxxx render StartWorkPage', {jobs, relatedIssues, errors});
 
-  const submit = (formValue: FormValue) => {
+  const submit = async (formValue: FormValue) => {
     console.log('submit StartWorkPage', formValue);
+    window.localStorage.setItem(LocalStorageKey_WorklogsOnStart, JSON.stringify(formValue.workItems));
     onBack();
   };
+  const [setStartTimeWithCurrentTime] = useMemo(
+    () => [() => setValue('startTime', dayjs().format('HH:mm'))],
+    [setValue],
+  );
 
   return (
     <SimpleGrid columns={2} spacing={6} p={6}>
@@ -72,7 +79,7 @@ export const StartWorkPage: React.FC<Props> = ({onBack}) => {
           <Heading as="h3" size="md">
             業務開始報告入力
           </Heading>
-          <FormControl isInvalid={!!errors.startTime}>
+          <FormControl isInvalid={!!errors.startTime} isRequired>
             <FormLabel>開始時間</FormLabel>
             <Flex>
               <Input
@@ -83,19 +90,20 @@ export const StartWorkPage: React.FC<Props> = ({onBack}) => {
                   pattern: {value: /[0-2][0-9]:[0-9][0-9]/, message: 'hh:mm のフォーマットで入力してください。'},
                 })}
               />
-              <Button marginLeft={6} size="md" paddingLeft={6} paddingRight={6}>
+              <Button marginLeft={6} size="md" paddingLeft={6} paddingRight={6} onClick={setStartTimeWithCurrentTime}>
                 現時刻にセット
               </Button>
             </Flex>
             <FormErrorMessage>{errors.startTime?.message}</FormErrorMessage>
           </FormControl>
-          <FormControl>
+          <FormControl isInvalid={!!errors.location} isRequired>
             <FormLabel>業務場所</FormLabel>
-            <Select>
+            <Select {...register('location', {required: true})}>
               <option />
               <option value="home">自宅</option>
               <option value="office">オフィス</option>
             </Select>
+            <FormErrorMessage>{errors.location?.message}</FormErrorMessage>
           </FormControl>
           <FormControl>
             <FormLabel>連絡事項</FormLabel>
@@ -124,12 +132,12 @@ export const StartWorkPage: React.FC<Props> = ({onBack}) => {
                         </Td>
                         <Td>
                           <FormControl>
-                            <Textarea size="sm" rows={2} />
+                            <Textarea size="sm" rows={2} {...register(`workItems.${index}.content`)} />
                           </FormControl>
                         </Td>
                         <Td>
                           <FormControl>
-                            <Input width="4rem" size="sm" />
+                            <Input width="4rem" size="sm" {...register(`workItems.${index}.time`)} />
                           </FormControl>
                         </Td>
                         <Td>

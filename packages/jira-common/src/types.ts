@@ -43,6 +43,7 @@ export interface FormattedJiraIssueBase {
   summary: string;
   assignee: JiraAuthor | null;
   mainAssignee: string | null;
+  updatedAt: string;
 }
 
 export interface FormattedJiraEpicIssue extends FormattedJiraIssueBase {

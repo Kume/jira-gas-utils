@@ -1,6 +1,5 @@
 import dayjs from 'dayjs';
-import {IssueWithRelation} from './appTypes';
-import {IssueRelation} from './types';
+import {IssueRelation, IssueWithRelation} from './types';
 
 export function sortIssueByRelation(issues: readonly IssueWithRelation[]): IssueWithRelation[] {
   const clone = [...issues];
@@ -34,9 +33,11 @@ export function sortIssueByRelation(issues: readonly IssueWithRelation[]): Issue
     if (!b.relation.recentlyWorked) {
       return -1;
     }
-    if (a.relation.recentlyWorked.at > b.relation.recentlyWorked.at) {
+    const aWorkedAt = dayjs(a.relation.recentlyWorked.at).toDate();
+    const bWorkedAt = dayjs(b.relation.recentlyWorked.at).toDate();
+    if (aWorkedAt > bWorkedAt) {
       return -1;
-    } else if (a.relation.recentlyWorked.at < b.relation.recentlyWorked.at) {
+    } else if (aWorkedAt < bWorkedAt) {
       return 1;
     }
     return 0;
@@ -61,3 +62,5 @@ export function issueRelationToLabel(relation: IssueRelation): string {
 
   return labels.join(', ');
 }
+
+export const LocalStorageKey_WorklogsOnStart = 'worklogsOnStart';

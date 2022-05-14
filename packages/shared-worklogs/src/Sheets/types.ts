@@ -31,7 +31,7 @@ export interface SQAccountTypeOnSheet {
 interface IssueOnSheetBase {
   readonly key: string;
   readonly summary: string;
-  readonly asigneeEmail: string | null;
+  readonly assigneeEmail: string | null;
   readonly mainAssignee: string | null;
   readonly updatedAt: Date;
 }
@@ -53,12 +53,22 @@ export interface SubTaskIssueOnSheet extends IssueOnSheetBase {
 
 export type IssueOnSheet = EpicIssueOnSheet | StandardIssueOnSheet | SubTaskIssueOnSheet;
 
+export type PlainIssueOnSheet = ToPlainObject<IssueOnSheet>;
+
 export interface Member {
   readonly name: string;
   readonly email: string;
 }
 
-export type IssueWithRelation = IssueOnSheet & {readonly relation: IssueRelation};
+type ToPlainObject<T> = T extends Date
+  ? string
+  : T extends (infer Item)[]
+  ? ToPlainObject<Item>[]
+  : T extends {[P in keyof T]: unknown}
+  ? {[P in keyof T]: ToPlainObject<T[P]>}
+  : T;
+
+export type IssueWithRelation = PlainIssueOnSheet & {readonly relation: IssueRelation};
 
 /**
  * 自身に関連のあるIssueの関係性を表します。

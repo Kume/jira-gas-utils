@@ -18,7 +18,7 @@ export class JiraIssueFormatter {
     this.fieldMapByName = new Map(fields.filter(({name}) => !!name).map((field) => [field.name || '', field]));
     this.epicNameKey = this.getFieldByUntranslatedNameOrFail('Epic Name').key;
     this.epicLinkKey = this.getFieldByUntranslatedNameOrFail('Epic Link').key;
-    this.mainAsigneeKey = this.getFieldByNameOrFail('実装担当者').key;
+    this.mainAsigneeKey = this.getFieldByNameOrFail('担当者(実装)').key;
   }
 
   private getFieldByUntranslatedNameOrFail(name: string): JiraField {
@@ -45,6 +45,7 @@ export class JiraIssueFormatter {
       summary: issue.fields['summary'] as string,
       assignee: issue.fields['assignee'] as any,
       mainAssignee: issue.fields[this.mainAsigneeKey] as string,
+      updatedAt: issue.fields['updated'] as string,
     };
 
     if (this.isEpic(issue)) {
