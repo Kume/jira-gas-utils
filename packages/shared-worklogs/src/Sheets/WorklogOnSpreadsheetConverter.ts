@@ -2,7 +2,7 @@ import {jiraIssueLinkSpreadCell, timeSecondsToHour, timeSecoundsToMinute} from '
 import {formatJiraDocumentToPlainString} from '../Jira/document';
 import {ForamttedJiraIsssue, JiraWorklog} from '../Jira/types';
 import {ConverterBase, ConveterFunctions, SpreadSheetValue} from '../GasJiraCommon/ConverterBase';
-import {WorklogOnSheet} from './types';
+import {WorklogOnSheet} from '../libs/types';
 
 type RawItem = readonly [JiraWorklog, ForamttedJiraIsssue | undefined];
 

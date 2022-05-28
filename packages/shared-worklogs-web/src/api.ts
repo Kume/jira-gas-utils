@@ -1,9 +1,25 @@
-import {IssueWithRelation, SQAccountTypeOnSheet, SQJobOnSheet} from './types';
+import {
+  IssueWithRelation,
+  PlainIssueOnSheet,
+  SettingsForFrontend,
+  SQAccountTypeOnSheet,
+  SQJobOnSheet,
+  StartWorkFormValue,
+  StartWorkParams,
+} from './libs/types';
+import {WorkEmail} from './models/WorkEmail';
 import {flatSampleIssueTree} from '@jira-gas-utils/jira-spread-common/dist/Jira/issueTree';
+// @ts-ignore ブラウザ用のビルドはdistディレクトリにあるが、型定義がされていないため必ずエラーが出る
+import handlebars from 'handlebars/dist/handlebars';
+import dayjs from 'dayjs';
+
+handlebars.registerHelper('formatDate', (date: Date | string, format: string): string => {
+  return dayjs(date).format(format);
+});
 
 declare const google: any;
 
-function runScriptAsync<T>(functionName: string, ...args: []): Promise<T | undefined> {
+function runScriptAsync<T>(functionName: string, ...args: unknown[]): Promise<T | undefined> {
   if (typeof google === 'undefined') {
     return Promise.resolve(undefined);
   }
@@ -27,7 +43,7 @@ export async function fetchJobs(): Promise<SQJobOnSheet[]> {
 }
 
 export async function fetchAccountTypes(): Promise<SQAccountTypeOnSheet[]> {
-  const result = await runScriptAsync<SQAccountTypeOnSheet[]>('loadAccountTypes');
+  const result = await runScriptAsync<SQAccountTypeOnSheet[]>('loadAfccountTypes');
   return (
     result ?? [
       {id: '7-1-1', label_l1: 'あ', label_l2: 'い', label_l3: 'う'},
@@ -131,5 +147,64 @@ export async function fetchRelatedIssues(): Promise<IssueWithRelation[]> {
         ],
       },
     ])
+  );
+}
+
+export async function searchIssues(searchWord: string): Promise<PlainIssueOnSheet[]> {
+  const result = await runScriptAsync<PlainIssueOnSheet[]>('searchIssues', searchWord);
+  return (
+    result ?? [
+      {
+        key: 'I-1001',
+        type: 'standard',
+        summary: '検索結果タスク1',
+        assigneeEmail: null,
+        mainAssignee: null,
+        epicLink: undefined,
+        updatedAt: '2022-04-04',
+      },
+      {
+        key: 'I-1002',
+        type: 'standard',
+        summary: '検索結果タスク2',
+        assigneeEmail: null,
+        mainAssignee: null,
+        epicLink: undefined,
+        updatedAt: '2022-04-04',
+      },
+      {
+        key: 'I-1003',
+        type: 'standard',
+        summary: '検索結果タスク3',
+        assigneeEmail: null,
+        mainAssignee: null,
+        epicLink: undefined,
+        updatedAt: '2022-04-04',
+      },
+    ]
+  );
+}
+
+export async function postStartWork(params: StartWorkFormValue): Promise<void> {
+  const settings = await fetchSettings();
+  const templateParameter = WorkEmail.makeParameterForStart(params, settings);
+  const emailTitle =
+    settings.startEmailSubjectTemplate && handlebars.compile(settings.startEmailSubjectTemplate)(templateParameter);
+  const emailContent =
+    settings.startEmailContentTemplate && handlebars.compile(settings.startEmailContentTemplate)(templateParameter);
+  const postParams: StartWorkParams = {...params, emailTitle, emailContent};
+  await runScriptAsync<void>('startWork', postParams);
+}
+
+export async function fetchSettings(): Promise<SettingsForFrontend> {
+  const result = await runScriptAsync<SettingsForFrontend>('getSettings');
+  return (
+    result || {
+      selfName: 'テスト姓',
+      startEmailSubjectTemplate: '【勤怠】{{formatDate now "YYYYMMDD"}}_{{name}} ({{workMethod}}開始)',
+      startEmailContentTemplate: '■開始時間\n{{startAtTime}}\n\n■業務内容{{workItems}}',
+      endEmailSubjectTemplate: '【勤怠】{{formatDate now "YYYYMMDD"}}_{{name}} ({{workMethod}}終了)',
+      endEmailContentTemplate: '■終了時間\n{{endAtTime}}\n\n■業務内容{{workItems}}',
+    }
   );
 }

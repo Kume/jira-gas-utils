@@ -83,3 +83,31 @@ export interface IssueRelation {
   /** お気に入りに入れたことを表します。 */
   readonly bookmark?: boolean;
 }
+
+export type WorkLocation = 'office' | 'home';
+
+export interface StartWorkFormValue {
+  readonly startTime: string;
+  readonly location: WorkLocation;
+  readonly messageForMeeting: string;
+  readonly workItems: readonly StartWorkWorkItem[];
+}
+
+export interface StartWorkParams extends StartWorkFormValue {
+  readonly emailTitle?: string;
+  readonly emailContent?: string;
+}
+
+export interface StartWorkWorkItem {
+  readonly issue: PlainIssueOnSheet;
+  readonly content: string;
+  readonly time: string;
+}
+
+export interface SettingsForFrontend {
+  selfName: string;
+  startEmailSubjectTemplate?: string;
+  startEmailContentTemplate?: string;
+  endEmailSubjectTemplate?: string;
+  endEmailContentTemplate?: string;
+}

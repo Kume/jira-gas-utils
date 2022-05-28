@@ -18,7 +18,7 @@ import {
 import React, {useEffect, useMemo} from 'react';
 import {useFieldArray, useForm} from 'react-hook-form';
 import {LocalStorageKey_WorklogsOnStart} from '../models';
-import {IssueOnSheet} from '../types';
+import {IssueOnSheet} from '../libs/types';
 
 interface FormValue {
   readonly worklogItems: readonly FormWorklogItem[];

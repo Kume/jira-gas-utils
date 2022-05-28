@@ -1,6 +1,6 @@
 import {ConveterFunctions} from '../GasJiraCommon/ConverterBase';
 import {SheetBase} from '../SpreadCommon/SheetBase';
-import {SQJobOnSheet} from './types';
+import {SQJobOnSheet} from '../libs/types';
 
 const MAX_ACCOUNT_TYPE = 10;
 

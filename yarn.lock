@@ -2815,12 +2815,14 @@ __metadata:
     "@emotion/styled": ^11
     "@jira-gas-utils/jira-spread-common": 0.1.0
     "@pmmmwh/react-refresh-webpack-plugin": ^0.4.3
+    "@types/handlebars": ^4.1.0
     "@types/react": ^17.0.0
     "@types/react-dom": ^17.0.0
     babel-jest: ^26.6.3
     babel-loader: ^8.2.2
-    dayjs: ^1.11.1
+    dayjs: ^1.11.2
     framer-motion: ^5
+    handlebars: ^4.7.7
     html-webpack-plugin: ^5.3.2
     react: ^17.0.1
     react-dev-utils: ^11.0.4
@@ -4204,6 +4206,15 @@ __metadata:
   dependencies:
     "@types/node": "*"
   checksum: d076bb61f45d0fc42dee496ef8b1c2f8742e15d5e47e90e20d0243386e426c04d4efd408a48875ab432f7960b4ce3414db20ed0fbbfc7bcc89d84e574f6e045a
+  languageName: node
+  linkType: hard
+
+"@types/handlebars@npm:^4.1.0":
+  version: 4.1.0
+  resolution: "@types/handlebars@npm:4.1.0"
+  dependencies:
+    handlebars: "*"
+  checksum: 536d9f690c93f5d13fcc4a37ae7dd11f41eb73c47416d56f51623aedc3b573ad9775d6618ede75d7bf9148ac75694e50f8e6ba5773de7d9f040811368c73739f
   languageName: node
   linkType: hard
 
@@ -6841,10 +6852,10 @@ __metadata:
   languageName: node
   linkType: hard
 
-"dayjs@npm:^1.11.1":
-  version: 1.11.1
-  resolution: "dayjs@npm:1.11.1"
-  checksum: d5fefd79935f64a3c262e67af7ebeca180bc402b3e99be4e12d20b6d438af3f86d507ba1cbaff95dc0b4e67f1067cea3eaf37b6b74f5494fdd4a6a2909514cd1
+"dayjs@npm:^1.11.2":
+  version: 1.11.2
+  resolution: "dayjs@npm:1.11.2"
+  checksum: 78f8bd04a9e5f5554aa06eacda65a7d59e162d39f621a46fd34fb3b51367c3662426d86b4e2f4ac535f81e0c4d5af3e8a83b37e672412eb556267d726c61f8f3
   languageName: node
   linkType: hard
 
@@ -8928,7 +8939,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"handlebars@npm:^4.7.7":
+"handlebars@npm:*, handlebars@npm:^4.7.7":
   version: 4.7.7
   resolution: "handlebars@npm:4.7.7"
   dependencies:

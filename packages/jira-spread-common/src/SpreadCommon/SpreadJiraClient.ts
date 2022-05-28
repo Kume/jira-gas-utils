@@ -54,6 +54,14 @@ export class SpreadJiraClient {
     return issues.issues.map((issue) => formatter.format(issue));
   }
 
+  public searchIssues(projects: readonly string[], searchWord: string): readonly ForamttedJiraIsssue[] {
+    const projectsCondition = projects.map((p) => `"${p}"`).join(', ');
+    const condition = `resolution = Unresolved AND project in (${projectsCondition}) AND text ~ "${searchWord}" ORDER BY updated DESC`;
+    const issues = this.fetcher.searchIssues(condition);
+    const formatter = new JiraIssueFormatter(this.fields);
+    return issues.issues.map((issue) => formatter.format(issue));
+  }
+
   public postWorklog(issueKeyOrId: string, worklog: JiraWorklogCreateRequest): JiraWorklog {
     const result = this.fetcher.postWorklog(issueKeyOrId, worklog);
     if ('errors' in result) {

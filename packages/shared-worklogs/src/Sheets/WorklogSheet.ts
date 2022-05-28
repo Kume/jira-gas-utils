@@ -2,7 +2,7 @@ import {ForamttedJiraIsssue, JiraWorklog} from '../Jira/types';
 import {SheetBase} from '../SpreadCommon/SheetBase';
 import {SpreadJiraClient} from '../SpreadCommon/SpreadJiraClient';
 import {getStartOfDate} from '../SpreadCommon/spreadUtils';
-import {WorklogOnSheet} from './types';
+import {WorklogOnSheet} from '../libs/types';
 import {WorklogOnSpreadsheetConverter} from './WorklogOnSpreadsheetConverter';
 
 export type StoredWorklog = WorklogOnSheet & {readonly row: number};

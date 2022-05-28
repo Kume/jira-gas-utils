@@ -1,5 +1,5 @@
 import dayjs from 'dayjs';
-import {IssueRelation, IssueWithRelation} from './types';
+import {IssueRelation, IssueWithRelation} from './libs/types';
 
 export function sortIssueByRelation(issues: readonly IssueWithRelation[]): IssueWithRelation[] {
   const clone = [...issues];

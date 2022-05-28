@@ -9,8 +9,13 @@ import {
   Select,
   SimpleGrid,
   Stack,
+  Tab,
   Table,
   TableContainer,
+  TabList,
+  TabPanel,
+  TabPanels,
+  Tabs,
   Tbody,
   Td,
   Text,
@@ -20,29 +25,20 @@ import {
   Tr,
 } from '@chakra-ui/react';
 import dayjs from 'dayjs';
-import React, {useMemo} from 'react';
+import React, {useCallback, useMemo} from 'react';
 import {useFieldArray, useForm} from 'react-hook-form';
 import {useQuery} from 'react-query';
-import {fetchJobs, fetchRelatedIssues} from '../api';
+import {fetchJobs, fetchRelatedIssues, postStartWork} from '../api';
 import {issueRelationToLabel, LocalStorageKey_WorklogsOnStart, sortIssueByRelation} from '../models';
-import {IssueOnSheet} from '../types';
-
-interface FormValue {
-  readonly startTime: string;
-  readonly location: 'office' | 'home';
-  readonly messageForMeeting: string;
-  readonly workItems: readonly WorkItem[];
-}
-
-interface WorkItem {
-  readonly issue: IssueOnSheet;
-  readonly content: string;
-  readonly time: string;
-}
+import {PlainIssueOnSheet, StartWorkFormValue} from '../libs/types';
+import {RelatedIssueList} from '../components/RelatedIssueList';
+import {SearchIssueView} from '../components/SearchIssueVIew';
 
 interface Props {
   readonly onBack: () => void;
 }
+
+type FormValue = StartWorkFormValue;
 
 async function fetchAndSortRelatedIssues() {
   return sortIssueByRelation(await fetchRelatedIssues());
@@ -59,13 +55,19 @@ export const StartWorkPage: React.FC<Props> = ({onBack}) => {
   const {fields, append, remove} = useFieldArray({control, name: 'workItems'});
   const {isLoading: relatedIssuesIsLoading, data: relatedIssues} = useQuery('relatedIssues', fetchAndSortRelatedIssues);
   const {isLoading: jobsIsLoading, data: jobs} = useQuery('jobs', fetchJobs);
+  const appendIssue = useCallback((issue: PlainIssueOnSheet) => append({issue}), []);
 
   console.log('xxxx render StartWorkPage', {jobs, relatedIssues, errors});
 
   const submit = async (formValue: FormValue) => {
     console.log('submit StartWorkPage', formValue);
-    window.localStorage.setItem(LocalStorageKey_WorklogsOnStart, JSON.stringify(formValue.workItems));
-    onBack();
+    try {
+      await postStartWork(formValue);
+      window.localStorage.setItem(LocalStorageKey_WorklogsOnStart, JSON.stringify(formValue.workItems));
+      onBack();
+    } catch (error) {
+      alert(`エラーが発生しました。[${error?.message}]`);
+    }
   };
   const [setStartTimeWithCurrentTime] = useMemo(
     () => [() => setValue('startTime', dayjs().format('HH:mm'))],
@@ -157,45 +159,20 @@ export const StartWorkPage: React.FC<Props> = ({onBack}) => {
           </Button>
         </Stack>
       </form>
-      <Stack borderWidth="1px" p={6}>
-        <Heading as="h3" size="md">
-          チケット一覧
-        </Heading>
-        <TableContainer whiteSpace="normal">
-          <Table size="sm">
-            <Thead>
-              <Tr>
-                <Th>タイトル</Th>
-                <Th>関連</Th>
-                <Th>詳細</Th>
-                <Th>追加</Th>
-              </Tr>
-            </Thead>
-            <Tbody>
-              {relatedIssues?.map((issue) => (
-                <Tr key={issue.key}>
-                  <Td>
-                    <Text noOfLines={2} title={issue.summary}>
-                      {issue.summary}
-                    </Text>
-                  </Td>
-                  <Td>{issueRelationToLabel(issue.relation)}</Td>
-                  <Td>
-                    <Button size="sm" onClick={() => append({issue})}>
-                      詳細
-                    </Button>
-                  </Td>
-                  <Td>
-                    <Button size="sm" bg="blue.400" color="white" onClick={() => append({issue})}>
-                      追加
-                    </Button>
-                  </Td>
-                </Tr>
-              ))}
-            </Tbody>
-          </Table>
-        </TableContainer>
-      </Stack>
+      <Tabs borderWidth="1px" p={6}>
+        <TabList>
+          <Tab>関連チケット</Tab>
+          <Tab>チケット検索</Tab>
+        </TabList>
+        <TabPanels>
+          <TabPanel>
+            <RelatedIssueList issues={relatedIssues} onAppend={appendIssue} />
+          </TabPanel>
+          <TabPanel>
+            <SearchIssueView onAppend={appendIssue} />
+          </TabPanel>
+        </TabPanels>
+      </Tabs>
     </SimpleGrid>
   );
 };

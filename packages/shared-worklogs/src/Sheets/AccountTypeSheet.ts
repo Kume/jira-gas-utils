@@ -1,6 +1,6 @@
 import {ConveterFunctions} from '../GasJiraCommon/ConverterBase';
 import {SheetBase} from '../SpreadCommon/SheetBase';
-import {SQAccountTypeOnSheet} from './types';
+import {SQAccountTypeOnSheet} from '../libs/types';
 
 export class AccountTypeSheet {
   public readonly sheetBase = new SheetBase('ジョブ内訳一覧', 'ジョブ内訳一覧');

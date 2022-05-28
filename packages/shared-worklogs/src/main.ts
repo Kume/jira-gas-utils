@@ -2,17 +2,22 @@ import {getGasJiraGlobal, setGasJiraGlobal} from './GasJiraCommon/GasJiraGlobal'
 import {AccountTypeSheet} from './Sheets/AccountTypeSheet';
 import {JobsSheet} from './Sheets/JobsSheet';
 import {SettingSheet} from './Sheets/SettingSheet';
-import { IssueOnSheet, IssueRelation, IssueWithRelation, PlainIssueOnSheet, WorklogOnSheet } from './Sheets/types';
+import {IssueWithRelation, PlainIssueOnSheet, SettingsForFrontend, StartWorkParams, WorklogOnSheet} from './libs/types';
 import {WorklogSheet} from './Sheets/WorklogSheet';
 import {SpreadJiraClient} from './SpreadCommon/SpreadJiraClient';
+import {EMail} from './models/EMail';
+import {IssueUtil} from './models/IssueUtil';
 
 function onOpen() {
   SpreadsheetApp.getActiveSpreadsheet().addMenu('管理者操作', [
     {name: '初期化', functionName: 'initialize'},
-    {name: 'シート更新', functionName: 'reloadSheets'}
+    {name: 'シート更新', functionName: 'reloadSheets'},
     {name: '開発', functionName: 'dev'},
   ]);
-  SpreadsheetApp.getActiveSpreadsheet().addMenu('ユーザー操作', []);
+  SpreadsheetApp.getActiveSpreadsheet().addMenu('ユーザー操作', [
+    // fetcher.tsのrefreshJiraTokenを呼び出す
+    {name: 'JIRAトークン更新', functionName: 'refreshJiraToken'},
+  ]);
 }
 
 function doGet() {
@@ -79,30 +84,32 @@ function loadRelatedIssues(): IssueWithRelation[] {
     }
   }
   const additionalIssues = client.fetchIssuesByIds(Array.from(issueKeysForFetch));
-  const issues = [...assignedIssues, ...additionalIssues].map((issue): IssueWithRelation => {
-    const relatedWorklogs = worklogsByIssueKey.get(issue.key);
-    relatedWorklogs?.sort((a, b) => b.startAt.getTime() - a.startAt.getTime());
-    const lastWorklog = relatedWorklogs?.[0];
-    const relation: IssueRelation = {
-      recentlyWorked: lastWorklog ? {at: lastWorklog.startAt.toISOString()} : undefined,
-      assigned: assignedIssueKeys.has(issue.key),
-    }
-    const base = {
-      key: issue.key,
-      summary: issue.summary,
-      mainAssignee: issue.mainAssignee,
-      assigneeEmail: issue.assignee?.emailAddress ?? '',
-      updatedAt: issue.updatedAt,
-      relation,
-    };
-    switch (issue.type) {
-      case 'epic':
-        return {...base, type: 'epic', epicName: issue.epicName}
-      case 'standard':
-        return {...base, type: 'standard', epicLink: issue.epicLink}
-      case 'subTask':
-        return {...base, type: 'subTask', parentKey: issue.parentKey}
-    }
-  })
-  return issues;
+  return IssueUtil.issueToWithRelation([...assignedIssues, ...additionalIssues], worklogsByIssueKey, assignedIssueKeys);
+}
+
+function startWork(params: StartWorkParams): void {
+  initializeVariables();
+  const settings = new SettingSheet().getSettings();
+  EMail.createStartWorkDraft(settings, params);
+}
+
+function searchIssues(searchWord: string): readonly PlainIssueOnSheet[] {
+  initializeVariables();
+  const settings = new SettingSheet().getSettings();
+  const client = new SpreadJiraClient(getGasJiraGlobal());
+  return client
+    .searchIssues(SettingSheet.myProject(settings), searchWord)
+    .map((formatted) => IssueUtil.formattedToPlain(formatted));
+}
+
+function getSettings(): SettingsForFrontend {
+  initializeVariables();
+  const settings = new SettingSheet().getSettings();
+  return {
+    selfName: SettingSheet.selfName(settings),
+    startEmailSubjectTemplate: settings.startEmailSubjectTemplate,
+    startEmailContentTemplate: settings.startEmailContentTemplate,
+    endEmailSubjectTemplate: settings.endEmailSubjectTemplate,
+    endEmailContentTemplate: settings.endEmailContentTemplate,
+  };
 }
