@@ -28,6 +28,11 @@ export interface SQAccountTypeOnSheet {
   readonly label_l3: string;
 }
 
+export interface SQJobMasters {
+  readonly jobs: readonly SQJobOnSheet[];
+  readonly accountTypes: readonly SQAccountTypeOnSheet[];
+}
+
 interface IssueOnSheetBase {
   readonly key: string;
   readonly summary: string;
@@ -102,6 +107,25 @@ export interface StartWorkWorkItem {
   readonly issue: PlainIssueOnSheet;
   readonly content: string;
   readonly time: string;
+}
+
+export interface EndWorkFormValue {
+  readonly worklogItems: readonly EndWorkWorkItem[];
+  readonly endTime: string;
+  readonly message: string;
+}
+
+export interface EndWorkParams extends EndWorkFormValue {
+  readonly emailTitle?: string;
+  readonly emailContent?: string;
+}
+
+export interface EndWorkWorkItem {
+  readonly issue: PlainIssueOnSheet;
+  readonly content: string;
+  readonly time: string;
+  readonly job: string;
+  readonly accountType: string;
 }
 
 export interface SettingsForFrontend {

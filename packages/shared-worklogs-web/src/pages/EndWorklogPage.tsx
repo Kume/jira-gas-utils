@@ -1,8 +1,10 @@
 import {
   Button,
   FormControl,
+  FormLabel,
   Heading,
   Input,
+  Select,
   Stack,
   Tab,
   Table,
@@ -20,23 +22,20 @@ import {
   Tr,
 } from '@chakra-ui/react';
 import React, {useCallback, useEffect, useMemo} from 'react';
-import {useFieldArray, useForm} from 'react-hook-form';
-import {LocalStorageKey_WorklogsOnStart} from '../models';
-import {IssueOnSheet, PlainIssueOnSheet} from '../libs/types';
+import {Controller, useFieldArray, useForm} from 'react-hook-form';
+import {LocalStorageKey_WorklogsOnStart, sortIssueByRelation} from '../models';
+import {EndWorkFormValue, IssueOnSheet, PlainIssueOnSheet} from '../libs/types';
 import {SearchIssueView} from '../components/SearchIssueVIew';
-
-interface FormValue {
-  readonly worklogItems: readonly FormWorklogItem[];
-}
-
-interface FormWorklogItem {
-  readonly issue: PlainIssueOnSheet;
-  readonly content: string;
-  readonly time: string;
-}
+import {useQuery} from 'react-query';
+import {fetchJobMasters, fetchRelatedIssues, postEndWork} from '../api';
+import {RelatedIssueList} from '../components/RelatedIssueList';
 
 interface Props {
   readonly onBack: () => void;
+}
+
+async function fetchAndSortRelatedIssues() {
+  return sortIssueByRelation(await fetchRelatedIssues());
 }
 
 export const EndWorklogPage: React.FC<Props> = ({onBack}) => {
@@ -45,9 +44,23 @@ export const EndWorklogPage: React.FC<Props> = ({onBack}) => {
     control,
     handleSubmit,
     setValue,
+    watch,
     formState: {errors},
-  } = useForm<FormValue>();
+  } = useForm<EndWorkFormValue>();
   const {fields, append, remove} = useFieldArray({control, name: 'worklogItems'});
+  const {isLoading: relatedIssuesIsLoading, data: relatedIssues} = useQuery('relatedIssues', fetchAndSortRelatedIssues);
+  const {isLoading: jobsIsLoading, data: jobMasters} = useQuery('jobMasters', fetchJobMasters);
+  const jobOptions = useMemo(() => {
+    if (!jobMasters) {
+      return [];
+    }
+    const accountTypeMap = new Map(jobMasters.accountTypes.map(({id, label_l3}) => [id, label_l3]));
+    return jobMasters.jobs.flatMap((job) => {
+      return job.accountTypes.map((accountTypeId) => {
+        return {label: `${job.label} / ${accountTypeMap.get(accountTypeId)}`, value: `${job.id}@${accountTypeId}`};
+      });
+    });
+  }, [jobMasters]);
   const appendIssue = useCallback((issue: PlainIssueOnSheet) => append({issue}), []);
 
   useEffect(() => {
@@ -58,9 +71,15 @@ export const EndWorklogPage: React.FC<Props> = ({onBack}) => {
     }
   }, []);
 
-  const submit = async (formValue: FormValue) => {
+  const submit = async (formValue: EndWorkFormValue) => {
     console.log('submit EndWorklogPage', formValue);
-    onBack();
+    try {
+      await postEndWork(formValue);
+      window.localStorage.setItem(LocalStorageKey_WorklogsOnStart, JSON.stringify([]));
+      onBack();
+    } catch (error) {
+      alert(`エラーが発生しました。[${error?.message}]`);
+    }
   };
   return (
     <Stack borderWidth="1px" p={6}>
@@ -70,6 +89,7 @@ export const EndWorklogPage: React.FC<Props> = ({onBack}) => {
       <Tabs>
         <TabList>
           <Tab>入力フォーム</Tab>
+          <Tab>関連チケット</Tab>
           <Tab>チケット検索</Tab>
         </TabList>
         <TabPanels>
@@ -77,6 +97,11 @@ export const EndWorklogPage: React.FC<Props> = ({onBack}) => {
             <form onSubmit={handleSubmit(submit)}>
               <Stack>
                 <FormControl>
+                  <FormLabel>連絡事項</FormLabel>
+                  <Textarea id="message" {...register('message')} />
+                </FormControl>
+                <FormControl>
+                  <FormLabel>業務内容</FormLabel>
                   <TableContainer whiteSpace="normal">
                     <Table size="sm">
                       <Thead>
@@ -84,11 +109,19 @@ export const EndWorklogPage: React.FC<Props> = ({onBack}) => {
                           <Th>チケット</Th>
                           <Th>内容</Th>
                           <Th>時間</Th>
+                          <Th>ジョブ / 内訳</Th>
                           <Th>削除</Th>
                         </Tr>
                       </Thead>
                       <Tbody>
                         {fields.map((field, index) => {
+                          const onSelectJob = (e: React.ChangeEvent<HTMLSelectElement>) => {
+                            const match = e.target.value.match(/^(.+)@(.+)$/);
+                            if (match) {
+                              setValue(`worklogItems.${index}.job`, match[1]);
+                              setValue(`worklogItems.${index}.accountType`, match[2]);
+                            }
+                          };
                           return (
                             <Tr key={field.id}>
                               <Td maxW="150px">
@@ -104,6 +137,27 @@ export const EndWorklogPage: React.FC<Props> = ({onBack}) => {
                               <Td>
                                 <FormControl>
                                   <Input width="4rem" size="sm" {...register(`worklogItems.${index}.time`)} />
+                                </FormControl>
+                              </Td>
+                              <Td>
+                                <FormControl>
+                                  <Controller
+                                    control={control}
+                                    name={`worklogItems.${index}`}
+                                    render={({
+                                      field: {
+                                        value: {job, accountType},
+                                      },
+                                    }) => (
+                                      <Select
+                                        value={job && accountType && `${job}@${accountType}`}
+                                        onChange={onSelectJob}>
+                                        {jobOptions.map((job) => (
+                                          <option value={job.value}>{job.label}</option>
+                                        ))}
+                                      </Select>
+                                    )}
+                                  />
                                 </FormControl>
                               </Td>
                               <Td>
@@ -123,6 +177,9 @@ export const EndWorklogPage: React.FC<Props> = ({onBack}) => {
                 </Button>
               </Stack>
             </form>
+          </TabPanel>
+          <TabPanel>
+            <RelatedIssueList issues={relatedIssues} onAppend={appendIssue} />
           </TabPanel>
           <TabPanel>
             <SearchIssueView onAppend={appendIssue} />

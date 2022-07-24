@@ -2,7 +2,15 @@ import {getGasJiraGlobal, setGasJiraGlobal} from './GasJiraCommon/GasJiraGlobal'
 import {AccountTypeSheet} from './Sheets/AccountTypeSheet';
 import {JobsSheet} from './Sheets/JobsSheet';
 import {SettingSheet} from './Sheets/SettingSheet';
-import {IssueWithRelation, PlainIssueOnSheet, SettingsForFrontend, StartWorkParams, WorklogOnSheet} from './libs/types';
+import {
+  IssueWithRelation,
+  PlainIssueOnSheet,
+  SettingsForFrontend,
+  StartWorkParams,
+  WorklogOnSheet,
+  SQJobMasters,
+  EndWorkParams,
+} from './libs/types';
 import {WorklogSheet} from './Sheets/WorklogSheet';
 import {SpreadJiraClient} from './SpreadCommon/SpreadJiraClient';
 import {EMail} from './models/EMail';
@@ -53,14 +61,11 @@ function dev() {
   worklogSheet.syncJiraToSheet(client);
 }
 
-function loadJobs() {
+function loadJobMasters(): SQJobMasters {
   initializeVariables();
-  return new JobsSheet().readJobs();
-}
-
-function loadAccountTypes() {
-  initializeVariables();
-  return new AccountTypeSheet().readAccountTypes();
+  const jobs = new JobsSheet().readJobs();
+  const accountTypes = new AccountTypeSheet().readAccountTypes();
+  return {jobs, accountTypes};
 }
 
 function loadRelatedIssues(): IssueWithRelation[] {
@@ -91,6 +96,12 @@ function startWork(params: StartWorkParams): void {
   initializeVariables();
   const settings = new SettingSheet().getSettings();
   EMail.createStartWorkDraft(settings, params);
+}
+
+function endWork(params: EndWorkParams): void {
+  initializeVariables();
+  const worklogSheet = new WorklogSheet();
+  worklogSheet.writeWorklogs(params.worklogItems);
 }
 
 function searchIssues(searchWord: string): readonly PlainIssueOnSheet[] {

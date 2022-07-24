@@ -1,4 +1,10 @@
-import {SettingsForFrontend, StartWorkFormValue, StartWorkWorkItem, WorkLocation} from '../libs/types';
+import {
+  EndWorkFormValue,
+  SettingsForFrontend,
+  StartWorkFormValue,
+  StartWorkWorkItem,
+  WorkLocation,
+} from '../libs/types';
 
 export interface StartWorkEmailParameter {
   readonly now: Date;
@@ -6,6 +12,16 @@ export interface StartWorkEmailParameter {
   readonly workMethod: string;
   readonly startAtTime: string;
   readonly workItems: string;
+  readonly message?: string;
+}
+
+export interface EndWorkEmailParameter {
+  readonly now: Date;
+  readonly name: string;
+  // readonly workMethod: string;
+  // readonly startAtTime: string;
+  readonly endAtTime: string;
+  // readonly workItems: string;
   readonly message?: string;
 }
 
@@ -18,6 +34,18 @@ export class WorkEmail {
       startAtTime: params.startTime,
       message: params.messageForMeeting,
       workItems: this.workPlansToText(params.workItems),
+    };
+  }
+
+  static makeParameterForEnd(params: EndWorkFormValue, settings: SettingsForFrontend): EndWorkEmailParameter {
+    // TODO すべてのパラメーターを実装
+    return {
+      now: new Date(),
+      name: settings.selfName,
+      // workMethod: this.workLocationToWorkMethod(params.location),
+      endAtTime: params.endTime,
+      message: params.message,
+      // workItems: this.workPlansToText(params.workItems),
     };
   }
 

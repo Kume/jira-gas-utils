@@ -57,8 +57,6 @@ export const StartWorkPage: React.FC<Props> = ({onBack}) => {
   const {isLoading: jobsIsLoading, data: jobs} = useQuery('jobs', fetchJobs);
   const appendIssue = useCallback((issue: PlainIssueOnSheet) => append({issue}), []);
 
-  console.log('xxxx render StartWorkPage', {jobs, relatedIssues, errors});
-
   const submit = async (formValue: FormValue) => {
     console.log('submit StartWorkPage', formValue);
     try {

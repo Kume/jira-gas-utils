@@ -30,6 +30,20 @@ export class WorklogOnSpreadsheetConverter {
       },
     },
     {
+      label: 'ジョブ',
+      rawToSpread: () => undefined,
+      spreadToStored: (worklog, value) => {
+        worklog.jobNumber = ConveterFunctions.parseString('ジョブNo', false, value);
+      },
+    },
+    {
+      label: '内訳',
+      rawToSpread: () => undefined,
+      spreadToStored: (worklog, value) => {
+        worklog.jobType = ConveterFunctions.parseString('分類', false, value);
+      },
+    },
+    {
       label: '作業内容',
       rawToSpread: ([{comment}]) => (comment ? formatJiraDocumentToPlainString(comment) : ''),
       spreadToStored: (worklog, value) => {
@@ -55,20 +69,6 @@ export class WorklogOnSpreadsheetConverter {
       rawToSpread: ([{author}]) => author.emailAddress,
       spreadToStored: (worklog, value) => {
         worklog.userEmail = ConveterFunctions.parseString('ユーザーメールアドレス', true, value);
-      },
-    },
-    {
-      label: 'ジョブNo',
-      rawToSpread: () => undefined,
-      spreadToStored: (worklog, value) => {
-        worklog.jobNumber = ConveterFunctions.parseString('ジョブNo', false, value);
-      },
-    },
-    {
-      label: '分類',
-      rawToSpread: () => undefined,
-      spreadToStored: (worklog, value) => {
-        worklog.jobType = ConveterFunctions.parseString('分類', false, value);
       },
     },
   ]);

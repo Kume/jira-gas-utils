@@ -1,8 +1,11 @@
 import {
+  EndWorkFormValue,
+  EndWorkParams,
   IssueWithRelation,
   PlainIssueOnSheet,
   SettingsForFrontend,
   SQAccountTypeOnSheet,
+  SQJobMasters,
   SQJobOnSheet,
   StartWorkFormValue,
   StartWorkParams,
@@ -29,28 +32,6 @@ function runScriptAsync<T>(functionName: string, ...args: unknown[]): Promise<T 
       .withSuccessHandler(resolve)
       [functionName](...args);
   });
-}
-
-export async function fetchJobs(): Promise<SQJobOnSheet[]> {
-  const result = await runScriptAsync<SQJobOnSheet[]>('loadJobs');
-  return (
-    result ?? [
-      {label: 'ジョブ1', id: 'JOB_00001', accountTypes: ['7-1-1', '7-1-2', '6-2-2']},
-      {label: 'ジョブ2', id: 'JOB_00002', accountTypes: ['7-1-1']},
-      {label: 'ジョブ3', id: 'JOB_00003', accountTypes: ['7-1-1']},
-    ]
-  );
-}
-
-export async function fetchAccountTypes(): Promise<SQAccountTypeOnSheet[]> {
-  const result = await runScriptAsync<SQAccountTypeOnSheet[]>('loadAfccountTypes');
-  return (
-    result ?? [
-      {id: '7-1-1', label_l1: 'あ', label_l2: 'い', label_l3: 'う'},
-      {id: '7-1-2', label_l1: 'あ', label_l2: 'い', label_l3: 'ウ'},
-      {id: '6-2-2', label_l1: 'A', label_l2: 'B', label_l3: 'C'},
-    ]
-  );
 }
 
 export async function fetchRelatedIssues(): Promise<IssueWithRelation[]> {
@@ -196,6 +177,17 @@ export async function postStartWork(params: StartWorkFormValue): Promise<void> {
   await runScriptAsync<void>('startWork', postParams);
 }
 
+export async function postEndWork(params: EndWorkFormValue): Promise<void> {
+  const settings = await fetchSettings();
+  const templateParameter = WorkEmail.makeParameterForEnd(params, settings);
+  const emailTitle =
+    settings.startEmailSubjectTemplate && handlebars.compile(settings.endEmailSubjectTemplate)(templateParameter);
+  const emailContent =
+    settings.startEmailContentTemplate && handlebars.compile(settings.endEmailContentTemplate)(templateParameter);
+  const postParams: EndWorkParams = {...params, emailTitle, emailContent};
+  await runScriptAsync<void>('endWork', postParams);
+}
+
 export async function fetchSettings(): Promise<SettingsForFrontend> {
   const result = await runScriptAsync<SettingsForFrontend>('getSettings');
   return (
@@ -205,6 +197,24 @@ export async function fetchSettings(): Promise<SettingsForFrontend> {
       startEmailContentTemplate: '■開始時間\n{{startAtTime}}\n\n■業務内容{{workItems}}',
       endEmailSubjectTemplate: '【勤怠】{{formatDate now "YYYYMMDD"}}_{{name}} ({{workMethod}}終了)',
       endEmailContentTemplate: '■終了時間\n{{endAtTime}}\n\n■業務内容{{workItems}}',
+    }
+  );
+}
+
+export async function fetchJobMasters(): Promise<SQJobMasters> {
+  const result = await runScriptAsync<SQJobMasters>('loadJobMasters');
+  return (
+    result ?? {
+      jobs: [
+        {label: 'ジョブ1', id: 'JOB_00001', accountTypes: ['7-1-1', '7-1-2', '6-2-2']},
+        {label: 'ジョブ2', id: 'JOB_00002', accountTypes: ['7-1-1']},
+        {label: 'ジョブ3', id: 'JOB_00003', accountTypes: ['7-1-1']},
+      ],
+      accountTypes: [
+        {id: '7-1-1', label_l1: 'あ', label_l2: 'い', label_l3: 'う'},
+        {id: '7-1-2', label_l1: 'あ', label_l2: 'い', label_l3: 'ウ'},
+        {id: '6-2-2', label_l1: 'A', label_l2: 'B', label_l3: 'C'},
+      ],
     }
   );
 }
