@@ -6,7 +6,8 @@
     "rootDir": "./src",
     "resolveJsonModule": true,
     "declarationMap": false,
-    "declaration": false
+    "declaration": false,
+    "jsx": "react"
   },
   "include": ["./src"]
 }
